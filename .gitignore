@@ -1,0 +1,31 @@
+# Python
+__pycache__/
+*.py[cod]
+*.so
+*.egg-info/
+dist/
+build/
+
+# Virtual environments
+.venv/
+venv/
+
+# Jupyter
+.ipynb_checkpoints/
+
+# Environment files
+.env
+
+# VS Code
+.vscode/
+
+# OS files
+.DS_Store
+
+# Data outputs
+data/outputs/*
+!data/outputs/.gitkeep
+
+# Optional large raw data
+data/raw/*
+!data/raw/.gitkeep
