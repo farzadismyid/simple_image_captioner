@@ -22,10 +22,9 @@ venv/
 # OS files
 .DS_Store
 
-# Data outputs
-data/outputs/*
-!data/outputs/.gitkeep
-
-# Optional large raw data
+# Data
 data/raw/*
 !data/raw/.gitkeep
+
+data/outputs/*
+!data/outputs/.gitkeep
