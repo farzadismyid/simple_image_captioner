@@ -55,6 +55,28 @@ def _find_terms(text: str, vocabulary: list[str]) -> list[str]:
     return list(OrderedDict.fromkeys(found))
 
 
+def _extract_item_color_pairs(text: str) -> list[dict]:
+    text = text.lower()
+    pairs = []
+
+    for color in COLOR_WORDS:
+        for garment in GARMENT_WORDS:
+            pattern = rf"\b{re.escape(color)}\s+{re.escape(garment)}\b"
+            if re.search(pattern, text):
+                pairs.append({"item": garment, "color": color})
+
+    unique_pairs = []
+    seen = set()
+
+    for pair in pairs:
+        key = (pair["item"], pair["color"])
+        if key not in seen:
+            seen.add(key)
+            unique_pairs.append(pair)
+
+    return unique_pairs
+
+
 def extract_features_from_caption(caption: str) -> dict:
     colors = _find_terms(caption, COLOR_WORDS)
     garments = _find_terms(caption, GARMENT_WORDS)
@@ -64,6 +86,7 @@ def extract_features_from_caption(caption: str) -> dict:
     accessories = _find_terms(caption, ACCESSORIES)
     materials = _find_terms(caption, MATERIAL_WORDS)
     style_words = _find_terms(caption, STYLE_WORDS)
+    item_color_pairs = _extract_item_color_pairs(caption)
 
     return {
         "colors": colors,
@@ -74,4 +97,5 @@ def extract_features_from_caption(caption: str) -> dict:
         "accessories": accessories,
         "materials": materials,
         "style_words": style_words,
+        "item_color_pairs": item_color_pairs,
     }
