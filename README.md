@@ -1,46 +1,126 @@
-# Simple Image Captioning
+# Simple Image Captioning (SIC)
 
-This project is a beginner-friendly image captioning project built in Python using Jupyter Notebook inside VS Code.
+This project is a beginner-friendly image captioning pipeline built in Python using Jupyter Notebook and a modular code structure.
 
-The goal of this project is to learn how to:
+The goal is to understand how vision-language models work in practice and how to build a clean, reusable pipeline for future extensions such as fashion understanding, recommendation systems, and multimodal AI applications.
 
-1. Load and process an input image
-2. Use a vision-language model for image captioning
-3. Extract simple visual and fashion-related features from the generated caption
-4. Organize the code in a modular way for future extensions
-5. Evaluate the quality of captions and extracted features
-6. Prepare the project for later deployment and model replacement
+## What this project does
 
-## Project scope
+This project implements a simple end-to-end pipeline:
 
-This is the first phase of a larger learning and development process.
+1. Load an input image
+2. Generate a caption using a vision-language model (Florence-2)
+3. Extract structured fashion-related features from the caption
+4. Save results in a reusable format (JSON)
 
-In this phase, the project focuses on:
+## Current capabilities
 
-- setting up the project structure
-- building a simple image captioning pipeline
-- testing a base model such as Florence-2 or Qwen-VL
-- learning how image captioning works in practice
-- preparing reusable modules for future experiments
+- Image captioning using **Florence-2 (Hugging Face Transformers)**
+- Modular architecture using `src/`
+- Rule-based feature extraction including:
+  - colors
+  - garments
+  - upper/lower wear
+  - footwear
+  - accessories
+  - materials
+  - style words
+- Extraction of **garment-color pairs** (e.g., "blue shirt", "black shoes")
+- Output saving as structured JSON
 
-Later phases may include:
+## Example output
 
-- improving feature extraction
-- testing different models
-- fine-tuning on fashion datasets
-- adding deployment through a simple interface
-- comparing model outputs and evaluation results
-
-## Project structure
-
-```text
+```json
+{
+  "image_path": "../data/raw/sample.png",
+  "caption": "A man is standing on a tiled floor. He is wearing a blue shirt, a brown jacket and blue jeans. He has black shoes on his feet.",
+  "features": {
+    "colors": ["blue", "brown", "black"],
+    "garments": ["shirt", "jacket", "jeans", "shoes"],
+    "upper_wear": ["shirt", "jacket"],
+    "lower_wear": ["jeans"],
+    "footwear": ["shoes"],
+    "accessories": [],
+    "materials": [],
+    "style_words": [],
+    "item_color_pairs": [
+      {"item": "shirt", "color": "blue"},
+      {"item": "jacket", "color": "brown"},
+      {"item": "jeans", "color": "blue"},
+      {"item": "shoes", "color": "black"}
+    ]
+  }
+}
+Project structure
 SIC/
 ├── app/
 ├── data/
 │   ├── raw/
 │   └── outputs/
 ├── notebooks/
+│   └── 01_setup_and_first_caption.ipynb
 ├── src/
-├── main.py
+│   ├── captioning.py
+│   └── feature_extraction.py
 ├── pyproject.toml
+├── uv.lock
+├── requirements.txt
 └── README.md
+Technologies used
+
+Python
+
+PyTorch
+
+Hugging Face Transformers
+
+Florence-2 vision-language model
+
+Jupyter Notebook (VS Code)
+
+uv (package manager)
+
+Setup
+
+Clone the repository and install dependencies:
+
+uv sync
+
+Run Jupyter Notebook:
+
+jupyter notebook
+
+Then open:
+
+notebooks/01_setup_and_first_caption.ipynb
+Notes
+
+The project uses pyproject.toml and uv.lock as the main dependency source
+
+requirements.txt is generated for compatibility
+
+Transformers is pinned for Florence-2 compatibility
+
+Current limitations
+
+Feature extraction is rule-based and limited to predefined vocabularies
+
+No relation understanding beyond simple color-item pairs
+
+No fine-tuning or domain-specific training yet
+
+Evaluation is not implemented yet
+
+Next steps
+
+Batch processing of multiple images
+
+Evaluation metrics for captions and features
+
+Improved feature extraction (LLM-based or learned models)
+
+Support for alternative models (e.g., Qwen-VL)
+
+Simple deployment using Streamlit or FastAPI
+
+Fine-tuning on fashion datasets
