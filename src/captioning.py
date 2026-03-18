@@ -40,15 +40,10 @@ def load_florence_model(model_id: str = MODEL_ID):
     torch_dtype = get_torch_dtype()
 
     model = AutoModelForCausalLM.from_pretrained(
-        model_id,
-        torch_dtype=torch_dtype,
-        trust_remote_code=True
+        model_id, torch_dtype=torch_dtype, trust_remote_code=True
     ).to(device)
 
-    processor = AutoProcessor.from_pretrained(
-        model_id,
-        trust_remote_code=True
-    )
+    processor = AutoProcessor.from_pretrained(model_id, trust_remote_code=True)
 
     return model, processor, device, torch_dtype
 
@@ -63,10 +58,7 @@ def load_image(image_path: str | Path) -> Image.Image:
     return image
 
 
-def build_prompt(
-    task_prompt: str = TASK_PROMPT,
-    user_prompt: str | None = None
-) -> str:
+def build_prompt(task_prompt: str = TASK_PROMPT, user_prompt: str | None = None) -> str:
     """
     Build the final text prompt sent to Florence.
 
@@ -101,29 +93,22 @@ def generate_caption(
     image = load_image(image_path)
     final_prompt = build_prompt(task_prompt=task_prompt, user_prompt=user_prompt)
 
-    inputs = processor(
-        text=final_prompt,
-        images=image,
-        return_tensors="pt"
-    ).to(device, torch_dtype)
+    inputs = processor(text=final_prompt, images=image, return_tensors="pt").to(
+        device, torch_dtype
+    )
 
     generated_ids = model.generate(
         input_ids=inputs["input_ids"],
         pixel_values=inputs["pixel_values"],
         max_new_tokens=max_new_tokens,
         do_sample=False,
-        num_beams=num_beams
+        num_beams=num_beams,
     )
 
-    generated_text = processor.batch_decode(
-        generated_ids,
-        skip_special_tokens=False
-    )[0]
+    generated_text = processor.batch_decode(generated_ids, skip_special_tokens=False)[0]
 
     parsed_answer = processor.post_process_generation(
-        generated_text,
-        task=task_prompt,
-        image_size=(image.width, image.height)
+        generated_text, task=task_prompt, image_size=(image.width, image.height)
     )
 
     caption = parsed_answer.get(task_prompt, "")
@@ -137,3 +122,6 @@ def generate_caption(
         "raw_output": generated_text,
         "parsed_output": parsed_answer,
     }
+
+
+# End of file
