@@ -3,7 +3,7 @@ import json
 
 import pandas as pd
 
-from src.captioning import load_florence_model, generate_caption
+from src.captioning import load_caption_model, generate_caption
 from src.feature_extraction import extract_features_from_caption
 
 
@@ -28,14 +28,15 @@ def process_images_batch(
     data_dir: str | Path,
     output_json_path: str | Path,
     output_csv_path: str | Path | None = None,
-    task_prompt: str = "<MORE_DETAILED_CAPTION>",
+    model_key: str = "florence2",
+    task_prompt: str | None = None,
 ) -> list[dict]:
     image_paths = get_image_paths(data_dir)
 
     if not image_paths:
         raise ValueError(f"No supported image files found in: {data_dir}")
 
-    model, processor, device, torch_dtype = load_florence_model()
+    loaded_model = load_caption_model(model_key=model_key)
 
     all_results = []
 
@@ -44,10 +45,8 @@ def process_images_batch(
 
         caption_result = generate_caption(
             image_path=image_path,
-            model=model,
-            processor=processor,
-            device=device,
-            torch_dtype=torch_dtype,
+            loaded_model=loaded_model,
+            model_key=model_key,
             task_prompt=task_prompt,
         )
 

@@ -90,7 +90,8 @@ def generate(
     num_beams: int = 3,
 ) -> dict:
     image = load_image(image_path)
-    final_prompt = build_prompt(task_prompt=task_prompt, user_prompt=user_prompt)
+    final_prompt = build_prompt(task_prompt=task_prompt,
+                                user_prompt=user_prompt)
 
     model = loaded_model["model"]
     processor = loaded_model["processor"]
