@@ -58,7 +58,8 @@ def load_image(image_path: str | Path) -> Image.Image:
     return image
 
 
-def build_prompt(task_prompt: str = TASK_PROMPT, user_prompt: str | None = None) -> str:
+def build_prompt(task_prompt: str = TASK_PROMPT,
+                 user_prompt: str | None = None) -> str:
     """
     Build the final text prompt sent to Florence.
 
@@ -91,11 +92,11 @@ def generate_caption(
     num_beams: int = 3,
 ) -> dict:
     image = load_image(image_path)
-    final_prompt = build_prompt(task_prompt=task_prompt, user_prompt=user_prompt)
+    final_prompt = build_prompt(task_prompt=task_prompt,
+                                user_prompt=user_prompt)
 
-    inputs = processor(text=final_prompt, images=image, return_tensors="pt").to(
-        device, torch_dtype
-    )
+    inputs = processor(text=final_prompt, images=image,
+                       return_tensors="pt").to(device, torch_dtype)
 
     generated_ids = model.generate(
         input_ids=inputs["input_ids"],
@@ -105,10 +106,12 @@ def generate_caption(
         num_beams=num_beams,
     )
 
-    generated_text = processor.batch_decode(generated_ids, skip_special_tokens=False)[0]
+    generated_text = processor.batch_decode(generated_ids,
+                                            skip_special_tokens=False)[0]
 
     parsed_answer = processor.post_process_generation(
-        generated_text, task=task_prompt, image_size=(image.width, image.height)
+        generated_text, task=task_prompt,
+        image_size=(image.width, image.height)
     )
 
     caption = parsed_answer.get(task_prompt, "")
