@@ -8,6 +8,24 @@ from transformers import AutoModelForCausalLM, AutoProcessor
 MODEL_ID = "microsoft/Florence-2-base-ft"
 TASK_PROMPT = "<MORE_DETAILED_CAPTION>"
 
+# Florence fixed task tokens that should be used alone
+FIXED_TASK_PROMPTS = {
+    "<CAPTION>",
+    "<DETAILED_CAPTION>",
+    "<MORE_DETAILED_CAPTION>",
+    "<OCR>",
+    "<OD>",
+    "<DENSE_REGION_CAPTION>",
+    "<REGION_PROPOSAL>",
+    "<CAPTION_TO_PHRASE_GROUNDING>",
+    "<REFERRING_EXPRESSION_SEGMENTATION>",
+    "<OPEN_VOCABULARY_DETECTION>",
+    "<REGION_TO_SEGMENTATION>",
+    "<REGION_TO_CATEGORY>",
+    "<REGION_TO_DESCRIPTION>",
+    "<OCR_WITH_REGION>",
+}
+
 
 def get_device() -> str:
     return "cuda" if torch.cuda.is_available() else "cpu"
@@ -37,8 +55,36 @@ def load_florence_model(model_id: str = MODEL_ID):
 
 def load_image(image_path: str | Path) -> Image.Image:
     image_path = Path(image_path)
+
+    if not image_path.exists():
+        raise FileNotFoundError(f"Image not found: {image_path}")
+
     image = Image.open(image_path).convert("RGB")
     return image
+
+
+def build_prompt(
+    task_prompt: str = TASK_PROMPT,
+    user_prompt: str | None = None
+) -> str:
+    """
+    Build the final text prompt sent to Florence.
+
+    Important:
+    For fixed Florence task prompts such as <MORE_DETAILED_CAPTION>,
+    the processor expects the text to be exactly the task token.
+    Extra text causes an AssertionError.
+
+    So for those prompts, we keep the task token alone and store
+    user_prompt only as metadata for future models or app logic.
+    """
+    if task_prompt in FIXED_TASK_PROMPTS:
+        return task_prompt
+
+    if user_prompt and user_prompt.strip():
+        return f"{task_prompt} {user_prompt.strip()}"
+
+    return task_prompt
 
 
 def generate_caption(
@@ -47,14 +93,16 @@ def generate_caption(
     processor,
     device: str,
     torch_dtype: torch.dtype,
-    prompt: str = TASK_PROMPT,
+    task_prompt: str = TASK_PROMPT,
+    user_prompt: str | None = None,
     max_new_tokens: int = 128,
     num_beams: int = 3,
-):
+) -> dict:
     image = load_image(image_path)
+    final_prompt = build_prompt(task_prompt=task_prompt, user_prompt=user_prompt)
 
     inputs = processor(
-        text=prompt,
+        text=final_prompt,
         images=image,
         return_tensors="pt"
     ).to(device, torch_dtype)
@@ -74,15 +122,17 @@ def generate_caption(
 
     parsed_answer = processor.post_process_generation(
         generated_text,
-        task=prompt,
+        task=task_prompt,
         image_size=(image.width, image.height)
     )
 
-    caption = parsed_answer[prompt]
+    caption = parsed_answer.get(task_prompt, "")
 
     return {
         "image_path": str(image_path),
-        "prompt": prompt,
+        "task_prompt": task_prompt,
+        "user_prompt": user_prompt,
+        "final_prompt": final_prompt,
         "caption": caption,
         "raw_output": generated_text,
         "parsed_output": parsed_answer,
