@@ -1,130 +1,30 @@
-from pathlib import Path
-
-import torch
-from PIL import Image
-from transformers import AutoModelForCausalLM, AutoProcessor
+from src.models.registry import get_model_entry
 
 
-MODEL_ID = "microsoft/Florence-2-base-ft"
-TASK_PROMPT = "<MORE_DETAILED_CAPTION>"
-
-# Florence fixed task tokens that should be used alone
-FIXED_TASK_PROMPTS = {
-    "<CAPTION>",
-    "<DETAILED_CAPTION>",
-    "<MORE_DETAILED_CAPTION>",
-    "<OCR>",
-    "<OD>",
-    "<DENSE_REGION_CAPTION>",
-    "<REGION_PROPOSAL>",
-    "<CAPTION_TO_PHRASE_GROUNDING>",
-    "<REFERRING_EXPRESSION_SEGMENTATION>",
-    "<OPEN_VOCABULARY_DETECTION>",
-    "<REGION_TO_SEGMENTATION>",
-    "<REGION_TO_CATEGORY>",
-    "<REGION_TO_DESCRIPTION>",
-    "<OCR_WITH_REGION>",
-}
-
-
-def get_device() -> str:
-    return "cuda" if torch.cuda.is_available() else "cpu"
-
-
-def get_torch_dtype() -> torch.dtype:
-    return torch.float16 if torch.cuda.is_available() else torch.float32
-
-
-def load_florence_model(model_id: str = MODEL_ID):
-    device = get_device()
-    torch_dtype = get_torch_dtype()
-
-    model = AutoModelForCausalLM.from_pretrained(
-        model_id, torch_dtype=torch_dtype, trust_remote_code=True
-    ).to(device)
-
-    processor = AutoProcessor.from_pretrained(model_id, trust_remote_code=True)
-
-    return model, processor, device, torch_dtype
-
-
-def load_image(image_path: str | Path) -> Image.Image:
-    image_path = Path(image_path)
-
-    if not image_path.exists():
-        raise FileNotFoundError(f"Image not found: {image_path}")
-
-    image = Image.open(image_path).convert("RGB")
-    return image
-
-
-def build_prompt(task_prompt: str = TASK_PROMPT,
-                 user_prompt: str | None = None) -> str:
-    """
-    Build the final text prompt sent to Florence.
-
-    Important:
-    For fixed Florence task prompts such as <MORE_DETAILED_CAPTION>,
-    the processor expects the text to be exactly the task token.
-    Extra text causes an AssertionError.
-
-    So for those prompts, we keep the task token alone and store
-    user_prompt only as metadata for future models or app logic.
-    """
-    if task_prompt in FIXED_TASK_PROMPTS:
-        return task_prompt
-
-    if user_prompt and user_prompt.strip():
-        return f"{task_prompt} {user_prompt.strip()}"
-
-    return task_prompt
+def load_caption_model(model_key: str = "florence2") -> dict:
+    model_entry = get_model_entry(model_key)
+    return model_entry["load_model"]()
 
 
 def generate_caption(
-    image_path: str | Path,
-    model,
-    processor,
-    device: str,
-    torch_dtype: torch.dtype,
-    task_prompt: str = TASK_PROMPT,
+    image_path: str,
+    loaded_model: dict,
+    model_key: str = "florence2",
+    task_prompt: str | None = None,
     user_prompt: str | None = None,
     max_new_tokens: int = 128,
     num_beams: int = 3,
 ) -> dict:
-    image = load_image(image_path)
-    final_prompt = build_prompt(task_prompt=task_prompt,
-                                user_prompt=user_prompt)
+    model_entry = get_model_entry(model_key)
 
-    inputs = processor(text=final_prompt, images=image,
-                       return_tensors="pt").to(device, torch_dtype)
+    if task_prompt is None:
+        task_prompt = model_entry["default_task_prompt"]
 
-    generated_ids = model.generate(
-        input_ids=inputs["input_ids"],
-        pixel_values=inputs["pixel_values"],
+    return model_entry["generate"](
+        image_path=image_path,
+        loaded_model=loaded_model,
+        task_prompt=task_prompt,
+        user_prompt=user_prompt,
         max_new_tokens=max_new_tokens,
-        do_sample=False,
         num_beams=num_beams,
     )
-
-    generated_text = processor.batch_decode(generated_ids,
-                                            skip_special_tokens=False)[0]
-
-    parsed_answer = processor.post_process_generation(
-        generated_text, task=task_prompt,
-        image_size=(image.width, image.height)
-    )
-
-    caption = parsed_answer.get(task_prompt, "")
-
-    return {
-        "image_path": str(image_path),
-        "task_prompt": task_prompt,
-        "user_prompt": user_prompt,
-        "final_prompt": final_prompt,
-        "caption": caption,
-        "raw_output": generated_text,
-        "parsed_output": parsed_answer,
-    }
-
-
-# End of file
