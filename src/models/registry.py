@@ -1,4 +1,5 @@
 from src.models import florence
+from src.models import qwen
 
 
 MODEL_REGISTRY = {
@@ -7,12 +8,11 @@ MODEL_REGISTRY = {
         "generate": florence.generate,
         "default_task_prompt": florence.DEFAULT_TASK_PROMPT,
     },
-     future:
-     "qwen2_vl": {
-         "load_model": qwen.load_model,
-         "generate": qwen.generate,
-         "default_task_prompt": "...",
-     },
+    "qwen2_vl": {
+        "load_model": qwen.load_model,
+        "generate": qwen.generate,
+        "default_task_prompt": None,
+    },
 }
 
 
