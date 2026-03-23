@@ -2,13 +2,14 @@ from pathlib import Path
 
 import torch
 from PIL import Image
-from transformers import AutoProcessor, AutoModelForCausalLM
+from transformers import AutoProcessor, AutoModelForVision2Seq
 
 MODEL_ID = "Qwen/Qwen2-VL-2B-Instruct"
 
 
 def get_device() -> str:
-    return "cuda" if torch.cuda.is_available() else "cpu"
+    # return "cuda" if torch.cuda.is_available() else "cpu"
+    return "cpu"
 
 
 def load_image(image_path: str | Path) -> Image.Image:
@@ -23,7 +24,7 @@ def load_image(image_path: str | Path) -> Image.Image:
 def load_model(model_id: str = MODEL_ID):
     device = get_device()
 
-    model = AutoModelForCausalLM.from_pretrained(
+    model = AutoModelForVision2Seq.from_pretrained(
         model_id,
         torch_dtype=torch.float16 if device == "cuda" else torch.float32,
         device_map="auto"
