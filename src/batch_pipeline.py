@@ -5,6 +5,7 @@ import pandas as pd
 
 from src.captioning import load_caption_model, generate_caption
 from src.feature_extraction import extract_features_from_caption
+from src.evaluation import evaluate_batch_results
 
 
 SUPPORTED_EXTENSIONS = {".png", ".jpg", ".jpeg"}
@@ -28,6 +29,7 @@ def process_images_batch(
     data_dir: str | Path,
     output_json_path: str | Path,
     output_csv_path: str | Path | None = None,
+    summary_json_path: str | Path | None = None,
     model_key: str = "florence2",
     task_prompt: str | None = None,
 ) -> list[dict]:
@@ -37,7 +39,6 @@ def process_images_batch(
         raise ValueError(f"No supported image files found in: {data_dir}")
 
     loaded_model = load_caption_model(model_key=model_key)
-
     all_results = []
 
     for image_path in image_paths:
@@ -55,6 +56,8 @@ def process_images_batch(
         full_result = {
             "image_path": str(image_path),
             "file_name": image_path.name,
+            "model_key": caption_result["model_key"],
+            "model_id": caption_result["model_id"],
             "task_prompt": caption_result["task_prompt"],
             "user_prompt": caption_result["user_prompt"],
             "final_prompt": caption_result["final_prompt"],
@@ -79,6 +82,7 @@ def process_images_batch(
             row = {
                 "file_name": item["file_name"],
                 "image_path": item["image_path"],
+                "model_key": item["model_key"],
                 "caption": item["caption"],
                 "colors": ", ".join(item["features"]["colors"]),
                 "garments": ", ".join(item["features"]["garments"]),
@@ -102,5 +106,18 @@ def process_images_batch(
         df.to_csv(output_csv_path, index=False)
 
         print(f"Saved CSV results to: {output_csv_path}")
+
+    summary = evaluate_batch_results(all_results)
+    summary["model_key"] = model_key
+    summary["num_images_found"] = len(image_paths)
+
+    if summary_json_path is not None:
+        summary_json_path = Path(summary_json_path)
+        summary_json_path.parent.mkdir(parents=True, exist_ok=True)
+
+        with open(summary_json_path, "w") as f:
+            json.dump(summary, f, indent=2)
+
+        print(f"Saved summary JSON to: {summary_json_path}")
 
     return all_results
