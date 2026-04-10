@@ -221,7 +221,8 @@ Future models (planned):
 - Compare multiple models (Florence vs Qwen)  
 - Improve feature extraction (LLM-based parsing)  
 - Build a simple user interface (Streamlit or API)  
-- Fine-tune models on fashion datasets  
+- Fine-tune models on fashion datasets
+- This model will be integrated in fashion compatibility domain 
 
 ---
 
