@@ -11,18 +11,18 @@ from src.evaluation import evaluate_batch_results
 SUPPORTED_EXTENSIONS = {".png", ".jpg", ".jpeg"}
 
 
-def get_image_paths(data_dir: str | Path) -> list[Path]:
-    data_dir = Path(data_dir)
+# def get_image_paths(data_dir: str | Path) -> list[Path]:
+#     data_dir = Path(data_dir)
 
-    if not data_dir.exists():
-        raise FileNotFoundError(f"Data directory not found: {data_dir}")
+#     if not data_dir.exists():
+#         raise FileNotFoundError(f"Data directory not found: {data_dir}")
 
-    image_paths = [
-        path for path in data_dir.iterdir()
-        if path.is_file() and path.suffix.lower() in SUPPORTED_EXTENSIONS
-    ]
+#     image_paths = [
+#         path for path in data_dir.iterdir()
+#         if path.is_file() and path.suffix.lower() in SUPPORTED_EXTENSIONS
+#     ]
 
-    return sorted(image_paths)
+#     return sorted(image_paths)
 
 
 def process_images_batch(
