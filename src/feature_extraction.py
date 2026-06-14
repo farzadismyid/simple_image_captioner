@@ -75,3 +75,27 @@ def _extract_item_color_pairs(text: str) -> list[dict]:
             unique_pairs.append(pair)
 
     return unique_pairs
+
+
+def extract_features_from_caption(caption: str) -> dict:
+    colors = _find_terms(caption, COLOR_WORDS)
+    garments = _find_terms(caption, GARMENT_WORDS)
+    upper_wear = _find_terms(caption, UPPER_WEAR)
+    lower_wear = _find_terms(caption, LOWER_WEAR)
+    footwear = _find_terms(caption, FOOTWEAR)
+    accessories = _find_terms(caption, ACCESSORIES)
+    materials = _find_terms(caption, MATERIAL_WORDS)
+    style_words = _find_terms(caption, STYLE_WORDS)
+    item_color_pairs = _extract_item_color_pairs(caption)
+
+    return {
+        "colors": colors,
+        "garments": garments,
+        "upper_wear": upper_wear,
+        "lower_wear": lower_wear,
+        "footwear": footwear,
+        "accessories": accessories,
+        "materials": materials,
+        "style_words": style_words,
+        "item_color_pairs": item_color_pairs,
+    }
