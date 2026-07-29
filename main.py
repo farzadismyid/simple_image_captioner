@@ -56,24 +56,4 @@ def parse_args():
     return parser.parse_args()
 
 
-def main():
-    args = parse_args()
 
-    print("Starting batch pipeline...")
-    print(f"Data directory: {args.data_dir}")
-    print(f"Model: {args.model_key}")
-
-    results = process_images_batch(
-        data_dir=Path(args.data_dir),
-        output_json_path=Path(args.output_json),
-        output_csv_path=Path(args.output_csv),
-        summary_json_path=Path(args.summary_json),
-        model_key=args.model_key,
-        task_prompt=args.task_prompt,
-    )
-
-    print(f"Done. Processed {len(results)} images.")
-
-
-if __name__ == "__main__":
-    main()
