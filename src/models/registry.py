@@ -1,7 +1,6 @@
 from src.models import florence
 from src.models import qwen
 
-
 MODEL_REGISTRY = {
     "florence2": {
         "load_model": florence.load_model,
