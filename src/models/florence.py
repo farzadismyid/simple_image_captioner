@@ -4,7 +4,6 @@ import torch
 from PIL import Image
 from transformers import AutoModelForCausalLM, AutoProcessor
 
-
 MODEL_ID = "microsoft/Florence-2-base-ft"
 DEFAULT_TASK_PROMPT = "<MORE_DETAILED_CAPTION>"
 
