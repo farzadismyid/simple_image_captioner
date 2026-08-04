@@ -1,6 +1,5 @@
 from typing import List, Dict
 
-
 def evaluate_single_result(result: Dict) -> Dict:
     caption = result.get("caption", "")
     features = result.get("features", {})
