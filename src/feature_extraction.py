@@ -1,7 +1,6 @@
 import re
 from collections import OrderedDict
 
-
 COLOR_WORDS = [
     "black", "white", "blue", "brown", "red", "green", "yellow",
     "pink", "purple", "grey", "gray", "orange", "beige", "cream",
