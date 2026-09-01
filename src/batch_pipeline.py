@@ -97,27 +97,3 @@ def process_images_batch(
                     for pair in item["features"]["item_color_pairs"]
                 ),
             }
-            rows.append(row)
-
-        df = pd.DataFrame(rows)
-
-        output_csv_path = Path(output_csv_path)
-        output_csv_path.parent.mkdir(parents=True, exist_ok=True)
-        df.to_csv(output_csv_path, index=False)
-
-        print(f"Saved CSV results to: {output_csv_path}")
-
-    summary = evaluate_batch_results(all_results)
-    summary["model_key"] = model_key
-    summary["num_images_found"] = len(image_paths)
-
-    if summary_json_path is not None:
-        summary_json_path = Path(summary_json_path)
-        summary_json_path.parent.mkdir(parents=True, exist_ok=True)
-
-        with open(summary_json_path, "w") as f:
-            json.dump(summary, f, indent=2)
-
-        print(f"Saved summary JSON to: {summary_json_path}")
-
-    return all_results
